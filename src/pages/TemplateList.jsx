@@ -21,97 +21,87 @@ export default function TemplateList() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-10 px-6">
+    <div className="min-h-screen bg-slate-50 px-6 py-10">
       <div className="max-w-7xl mx-auto">
 
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
           <div>
             <h1 className="text-2xl font-semibold text-slate-900">
-              Email templates
+              Email Templates
             </h1>
             <p className="text-sm text-slate-500 mt-1">
-              Manage and reuse your email designs.
+              Create, manage and reuse your email designs
             </p>
           </div>
 
           <Link
             to="/templates/create"
-            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition"
+            className="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition shadow-sm"
           >
-            Create template
+            + Create template
           </Link>
         </div>
 
-        {/* Table */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-100 text-slate-600">
-                <tr>
-                  <th className="px-6 py-4 text-left font-semibold">Template name</th>
-                  <th className="px-6 py-4 text-left font-semibold">Subject</th>
-                  <th className="px-6 py-4 text-left font-semibold">Blocks</th>
-                  <th className="px-6 py-4 text-left font-semibold">Created</th>
-                  <th className="px-6 py-4 text-right font-semibold">Actions</th>
-                </tr>
-              </thead>
-
-              <tbody className="divide-y divide-slate-200">
-                {templates.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan="5"
-                      className="px-6 py-10 text-center text-slate-500"
-                    >
-                      No templates created yet
-                    </td>
-                  </tr>
-                ) : (
-                  templates.map((t) => (
-                    <tr
-                      key={t._id}
-                      className="hover:bg-slate-50 transition"
-                    >
-                      <td className="px-6 py-4 font-medium text-slate-900">
-                        {t.name}
-                      </td>
-
-                      <td className="px-6 py-4 text-slate-700">
-                        {t.subject}
-                      </td>
-
-                      <td className="px-6 py-4 text-slate-600">
-                        {t.blocks.length}
-                      </td>
-
-                      <td className="px-6 py-4 text-slate-500">
-                        {new Date(t.createdAt).toLocaleDateString()}
-                      </td>
-
-                      <td className="px-6 py-4">
-                        <div className="flex justify-end gap-4">
-                          <Link
-                            to={`/templates/${t._id}`}
-                            className="text-indigo-600 hover:text-indigo-800 font-medium"
-                          >
-                            Preview
-                          </Link>
-
-                          <Link
-                            to={`/?template=${t._id}`}
-                            className="text-emerald-600 hover:text-emerald-800 font-medium"
-                          >
-                            Use
-                          </Link>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+        {/* Empty state */}
+        {templates.length === 0 && (
+          <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-500">
+            No templates created yet
           </div>
+        )}
+
+        {/* Card Grid */}
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {templates.map((t) => (
+            <div
+              key={t._id}
+              className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition p-6 flex flex-col"
+            >
+              {/* Top */}
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-slate-900 truncate">
+                  {t.name}
+                </h3>
+                <p className="text-sm text-slate-500 mt-1 line-clamp-2">
+                  {t.subject}
+                </p>
+              </div>
+
+              {/* Meta */}
+              <div className="flex items-center justify-between text-xs text-slate-500 mb-5">
+                <span>{t.blocks.length} blocks</span>
+                <span>
+                  {new Date(t.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+
+              {/* Preview snippet */}
+              <div className="flex-1 bg-slate-50 rounded-xl p-4 text-sm text-slate-700 mb-5 line-clamp-4">
+                {t.blocks
+                  .filter((b) => b.type === "text")
+                  .map((b) => b.text)
+                  .join(" ")
+                  || "No text content"}
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center justify-between mt-auto">
+                <Link
+                  to={`/templates/${t._id}`}
+                  className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
+                >
+                  Preview
+                </Link>
+
+                <Link
+                  to={`/?template=${t._id}`}
+                  className="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 transition"
+                >
+                  Use template
+                </Link>
+              </div>
+            </div>
+          ))}
         </div>
 
       </div>

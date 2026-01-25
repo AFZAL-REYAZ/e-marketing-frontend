@@ -65,4 +65,8 @@ export const getTemplateById = async (id) => {
   return res.data;
 };
 
+export const deleteAdmin = async (id) => {
+  const res = await API.delete(`/admin/${id}`);
+  return res.data;
+};
 

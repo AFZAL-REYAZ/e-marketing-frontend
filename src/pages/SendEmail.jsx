@@ -15,7 +15,7 @@ export default function SendEmail() {
   const [progress, setProgress] = useState(null);
   const [status, setStatus] = useState("");
 
-  /* ================= LOAD TEMPLATE ================= */
+  /* LOAD TEMPLATE */
   useEffect(() => {
     if (!templateId) return;
 
@@ -25,82 +25,59 @@ export default function SendEmail() {
     });
   }, [templateId]);
 
-  /* ================= EMAIL CLEANER ================= */
-  const cleanEmails = (raw) => {
-    const valid = raw
-      .split(/[\n,]+/)
-      .map((e) => e.trim().toLowerCase())
-      .filter(
-        (e) =>
-          e &&
-          /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)
-      );
+  /* EMAIL CLEANER */
+  const cleanEmails = (raw) =>
+    Array.from(
+      new Set(
+        raw
+          .split(/[\n,]+/)
+          .map((e) => e.trim().toLowerCase())
+          .filter((e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e))
+      )
+    );
 
-    return Array.from(new Set(valid));
-  };
-
-  /* ================= CSV IMPORT ================= */
+  /* CSV IMPORT */
   const handleCSVUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
-
     reader.onload = (event) => {
-      const text = event.target.result;
+      const rows = event.target.result.split(/\r?\n/);
+      const extracted = rows
+        .map((r) => r.split(",")[0])
+        .filter((e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e));
 
-      const rows = text.split(/\r?\n/);
-      const extractedEmails = rows
-        .map((row) => row.split(",")[0]) // first column
-        .map((e) => e.trim().toLowerCase())
-        .filter(
-          (e) =>
-            e &&
-            /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)
-        );
-
-      const merged = cleanEmails(
-        emails + "\n" + extractedEmails.join("\n")
-      );
-
+      const merged = cleanEmails(emails + "\n" + extracted.join("\n"));
       setEmails(merged.join("\n"));
-      setStatus(
-        `📥 Imported ${extractedEmails.length} emails from CSV`
-      );
+      setStatus(`📥 Imported ${extracted.length} emails`);
     };
 
     reader.readAsText(file);
-    e.target.value = ""; // reset input
+    e.target.value = "";
   };
 
-  /* ================= SEND ================= */
+  /* SEND */
   const handleSend = async () => {
-    if (!emails || !subject) {
-      alert("Recipients and subject are required");
-      return;
-    }
+    if (!emails || !subject) return alert("Recipients and subject required");
 
-    const emailArray = cleanEmails(emails);
-    const total = emailArray.length;
-    if (!total) {
-      alert("No valid emails found");
-      return;
-    }
+    const list = cleanEmails(emails);
+    if (!list.length) return alert("No valid emails");
 
     setLoading(true);
-    setStatus("Sending campaign...");
-    setProgress({ current: 0, total });
+    setProgress({ current: 0, total: list.length });
+    setStatus("🚀 Sending campaign...");
 
     try {
       await sendEmails({
-        emails: emailArray.join("\n"),
+        emails: list.join("\n"),
         subject,
         message,
         templateId,
         blocks,
       });
 
-      setProgress({ current: total, total });
+      setProgress({ current: list.length, total: list.length });
       setStatus("✅ Campaign sent successfully");
       setEmails("");
       setMessage("");
@@ -112,118 +89,126 @@ export default function SendEmail() {
   };
 
   const percentage =
-    progress && progress.total
+    progress?.total > 0
       ? Math.round((progress.current / progress.total) * 100)
       : 0;
 
   return (
-    <div className="max-w-5xl mx-auto p-8 bg-white rounded-2xl shadow">
+    <div className="max-w-6xl mx-auto space-y-8">
       {/* HEADER */}
-      <h1 className="text-2xl font-bold mb-2">
-        📤 Send Email Campaign
-      </h1>
-      <p className="text-gray-500 mb-6">
-        Send bulk emails using message or template
-      </p>
-
-      {/* RECIPIENTS */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">
-          Recipients
-        </label>
-
-        <textarea
-          className="w-full border rounded-lg p-3 mb-3"
-          placeholder="Recipients (comma or newline separated)"
-          value={emails}
-          onChange={(e) => setEmails(e.target.value)}
-          rows={4}
-        />
-
-        {/* CSV IMPORT */}
-        <label className="inline-block cursor-pointer text-sm font-medium text-indigo-600 hover:underline">
-          📄 Import CSV
-          <input
-            type="file"
-            accept=".csv"
-            onChange={handleCSVUpload}
-            className="hidden"
-          />
-        </label>
+      <div className="bg-gradient-to-r from-indigo-600 to-blue-400 rounded-3xl p-4 text-white shadow-lg">
+        <h1 className="text-3xl font-semibold">Email Campaign</h1>
+        <p className="text-indigo-100 mt-2">
+          Create and deliver bulk email campaigns with confidence
+        </p>
       </div>
 
-      {/* SUBJECT */}
-      <input
-        className="w-full border rounded-lg p-3 mb-4"
-        placeholder="Email subject"
-        value={subject}
-        onChange={(e) => setSubject(e.target.value)}
-      />
+      {/* FORM */}
+      <div className="bg-white rounded-3xl shadow border p-8 space-y-6">
+        {/* RECIPIENTS */}
+        <section>
+          <label className="text-sm font-semibold text-gray-700 mb-2 block">
+            Recipients
+          </label>
 
-      {/* MESSAGE (ONLY IF NO TEMPLATE) */}
-      {!templateId && (
-        <textarea
-          className="w-full border rounded-lg p-3 mb-6"
-          placeholder="Email message"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          rows={6}
-        />
-      )}
+          <textarea
+            className="w-full rounded-xl border p-4 focus:ring-2 focus:ring-indigo-500"
+            rows={4}
+            placeholder="email@example.com, email2@example.com"
+            value={emails}
+            onChange={(e) => setEmails(e.target.value)}
+          />
 
-      {/* TEMPLATE PREVIEW */}
-      {templateId && (
-        <div className="border rounded-xl p-4 bg-gray-50 mb-6">
-          <h2 className="font-semibold mb-3">
-            👁 Template Preview
-          </h2>
+          <label className="inline-flex items-center gap-2 mt-3 cursor-pointer text-sm font-medium text-indigo-600">
+            📄 Import CSV
+            <input type="file" accept=".csv" onChange={handleCSVUpload} hidden />
+          </label>
+        </section>
 
-          {blocks.map((b, i) => (
-            <div key={i} className="mb-3">
-              {b.type === "text" && <p>{b.text}</p>}
-              {b.type === "button" && (
-                <span className="inline-block bg-indigo-600 text-white px-4 py-2 rounded">
-                  {b.text}
-                </span>
-              )}
-              {b.type === "divider" && <hr />}
-            </div>
-          ))}
-        </div>
-      )}
+        {/* SUBJECT */}
+        <section>
+          <label className="text-sm font-semibold text-gray-700 mb-2 block">
+            Subject
+          </label>
+          <input
+            className="w-full rounded-xl border p-4 focus:ring-2 focus:ring-indigo-500"
+            placeholder="Campaign subject"
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+          />
+        </section>
 
-      {/* SEND BUTTON */}
-      <button
-        onClick={handleSend}
-        disabled={loading}
-        className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50"
-      >
-        {loading ? "Sending..." : "🚀 Send Campaign"}
-      </button>
-
-      {/* STATUS */}
-      {status && (
-        <div className="mt-4 text-center text-sm font-medium">
-          {status}
-        </div>
-      )}
-
-      {/* PROGRESS BAR */}
-      {progress && (
-        <div className="mt-6">
-          <div className="flex justify-between text-xs text-gray-600 mb-1">
-            <span>Progress</span>
-            <span>{percentage}%</span>
-          </div>
-
-          <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-indigo-600 transition-all"
-              style={{ width: `${percentage}%` }}
+        {/* MESSAGE */}
+        {!templateId && (
+          <section>
+            <label className="text-sm font-semibold text-gray-700 mb-2 block">
+              Message
+            </label>
+            <textarea
+              className="w-full rounded-xl border p-4 focus:ring-2 focus:ring-indigo-500"
+              rows={6}
+              placeholder="Write your message..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
             />
+          </section>
+        )}
+
+        {/* TEMPLATE PREVIEW */}
+        {templateId && (
+          <section className="bg-gray-50 rounded-2xl p-6 border">
+            <h3 className="font-semibold mb-4 text-gray-800">
+              👁 Template Preview
+            </h3>
+
+            <div className="space-y-4">
+              {blocks.map((b, i) => (
+                <div key={i}>
+                  {b.type === "text" && <p>{b.text}</p>}
+                  {b.type === "button" && (
+                    <span className="inline-block bg-indigo-600 text-white px-5 py-2 rounded-xl text-sm font-semibold">
+                      {b.text}
+                    </span>
+                  )}
+                  {b.type === "divider" && <hr />}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* SEND */}
+        <button
+          onClick={handleSend}
+          disabled={loading}
+          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-2xl font-semibold transition disabled:opacity-60"
+        >
+          {loading ? "Sending..." : "🚀 Send Campaign"}
+        </button>
+
+        {/* STATUS */}
+        {status && (
+          <div className="text-center text-sm font-semibold text-gray-700">
+            {status}
           </div>
-        </div>
-      )}
+        )}
+
+        {/* PROGRESS */}
+        {progress && (
+          <div>
+            <div className="flex justify-between text-xs mb-1 text-gray-500">
+              <span>Progress</span>
+              <span>{percentage}%</span>
+            </div>
+            <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
+              <div
+                className="h-full bg-indigo-600 transition-all"
+                style={{ width: `${percentage}%` }}
+              />
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

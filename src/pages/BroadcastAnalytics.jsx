@@ -12,7 +12,7 @@ export default function BroadcastAnalytics() {
 
   if (!broadcast) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-700 font-medium">
+      <div className="min-h-screen flex items-center justify-center">
         Loading analytics...
       </div>
     );
@@ -34,7 +34,7 @@ export default function BroadcastAnalytics() {
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest">
           Broadcast analytics
         </p>
-        <h1 className="text-3xl sm:text-4xl font-semibold text-gray-900 mt-1">
+        <h1 className="text-3xl sm:text-4xl font-semibold mt-1">
           Performance overview
         </h1>
         <p className="text-sm text-gray-500 mt-2">
@@ -42,37 +42,32 @@ export default function BroadcastAnalytics() {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      {/* STATS */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         <Stat label="Sent" value={stats.sent} />
         <Stat label="Opened" value={stats.opened} />
         <Stat label="Clicked" value={stats.clicked} />
         <Stat label="Open rate" value={`${openRate}%`} />
         <Stat label="Click rate" value={`${clickRate}%`} />
         <Stat label="Unsubscribed" value={stats.unsubscribed} />
-
       </div>
 
-      <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-200">
-        <Bar label="Sent emails" value={stats.sent} max={stats.sent} />
-        <Bar label="Opened emails" value={stats.opened} max={stats.sent} />
-        <Bar label="Clicked emails" value={stats.clicked} max={stats.sent} />
+      {/* BARS */}
+      <div className="bg-white p-4 sm:p-6 rounded-3xl shadow-sm border">
+        <Bar label="Sent" value={stats.sent} max={stats.sent} />
+        <Bar label="Opened" value={stats.opened} max={stats.sent} />
+        <Bar label="Clicked" value={stats.clicked} max={stats.sent} />
         <Bar label="Unsubscribed" value={stats.unsubscribed} max={stats.sent} />
       </div>
     </div>
   );
 }
 
-/* ================= SMALL COMPONENTS ================= */
-
 function Stat({ label, value }) {
   return (
-    <div className="bg-white rounded-2xl shadow-sm p-5 border border-gray-200">
-      <p className="text-xs font-medium text-gray-500 uppercase tracking-widest">
-        {label}
-      </p>
-      <p className="mt-1 text-2xl font-semibold text-gray-900">
-        {value}
-      </p>
+    <div className="bg-white p-4 rounded-2xl border shadow-sm">
+      <p className="text-xs text-gray-500 uppercase">{label}</p>
+      <p className="text-2xl font-semibold">{value}</p>
     </div>
   );
 }
@@ -81,15 +76,14 @@ function Bar({ label, value, max }) {
   const width = max ? (value / max) * 100 : 0;
 
   return (
-    <div className="mb-5">
-      <div className="flex justify-between text-sm font-medium text-slate-700 mb-1">
+    <div className="mb-4">
+      <div className="flex justify-between text-sm mb-1">
         <span>{label}</span>
-        <span className="text-slate-900">{value}</span>
+        <span>{value}</span>
       </div>
-
-      <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
+      <div className="h-2 bg-gray-100 rounded-full">
         <div
-          className="h-2.5 bg-blue-600 rounded-full transition-all"
+          className="h-2 bg-blue-600 rounded-full"
           style={{ width: `${width}%` }}
         />
       </div>
