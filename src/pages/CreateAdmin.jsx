@@ -21,7 +21,7 @@ export default function CreateAdmin() {
       const token = localStorage.getItem("token");
 
       await axios.post(
-        "http://localhost:5000/api/admin/create",
+        "https://e-marketing-backend.onrender.com/api/admin/create",
         { email, password, role },
         {
           headers: { Authorization: `Bearer ${token}` },

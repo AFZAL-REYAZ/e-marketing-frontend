@@ -9,7 +9,7 @@ export default function AdminDashboard() {
     const fetchStats = async () => {
       const token = localStorage.getItem("token");
       const res = await axios.get(
-        "http://localhost:5000/api/admin-dashboard/stats",
+        "https://e-marketing-backend.onrender.com/api/admin-dashboard/stats",
         {
           headers: {
             Authorization: `Bearer ${token}`,

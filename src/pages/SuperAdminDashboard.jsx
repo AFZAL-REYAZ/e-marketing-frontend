@@ -9,7 +9,7 @@ export default function SuperAdminDashboard() {
     const fetchStats = async () => {
       const token = localStorage.getItem("token");
       const res = await axios.get(
-        "http://localhost:5000/api/dashboard/stats",
+        "https://e-marketing-backend.onrender.com/api/dashboard/stats",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
