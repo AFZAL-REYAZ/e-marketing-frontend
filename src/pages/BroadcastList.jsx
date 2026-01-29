@@ -9,6 +9,38 @@ export default function BroadcastList() {
     getBroadcasts().then(setBroadcasts);
   }, []);
 
+  const getStatusBadge = (status) => {
+    const base =
+      "px-2 py-1 rounded-full text-xs font-semibold inline-block";
+
+    switch (status) {
+      case "scheduled":
+        return (
+          <span className={`${base} bg-yellow-100 text-yellow-700`}>
+            🟡 Scheduled
+          </span>
+        );
+      case "sending":
+        return (
+          <span className={`${base} bg-blue-100 text-blue-700`}>
+            🔵 Sending
+          </span>
+        );
+      case "sent":
+        return (
+          <span className={`${base} bg-green-100 text-green-700`}>
+            🟢 Sent
+          </span>
+        );
+      default:
+        return (
+          <span className={`${base} bg-gray-100 text-gray-600`}>
+            Unknown
+          </span>
+        );
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* HEADER */}
@@ -38,9 +70,7 @@ export default function BroadcastList() {
             <tr>
               <th className="px-6 py-3">Subject</th>
               <th className="px-6 py-3">Sent</th>
-              {/* <th className="px-6 py-3">Opened</th>
-              <th className="px-6 py-3">Clicked</th>
-              <th className="px-6 py-3">Unsubscribed</th> */}
+              <th className="px-6 py-3">Status</th>
               <th className="px-6 py-3 text-right">Action</th>
             </tr>
           </thead>
@@ -56,10 +86,13 @@ export default function BroadcastList() {
                 <td className="px-6 py-4 font-medium truncate max-w-xs">
                   {b.subject}
                 </td>
+
                 <td className="px-6 py-4">{b.stats.sent}</td>
-                {/* <td className="px-6 py-4">{b.stats.opened}</td>
-                <td className="px-6 py-4">{b.stats.clicked}</td>
-                <td className="px-6 py-4">{b.stats.unsubscribed}</td> */}
+
+                <td className="px-6 py-4">
+                  {getStatusBadge(b.status)}
+                </td>
+
                 <td className="px-6 py-4 text-right">
                   <Link
                     to={`/broadcasts/${b._id}`}
@@ -81,7 +114,10 @@ export default function BroadcastList() {
             key={b._id}
             className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm"
           >
-            <h3 className="font-semibold truncate">{b.subject}</h3>
+            <div className="flex justify-between items-center">
+              <h3 className="font-semibold truncate">{b.subject}</h3>
+              {getStatusBadge(b.status)}
+            </div>
 
             <div className="grid grid-cols-2 gap-3 text-sm mt-3">
               <MiniStat label="Sent" value={b.stats.sent} />

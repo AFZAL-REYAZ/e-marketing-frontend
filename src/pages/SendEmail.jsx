@@ -5,6 +5,7 @@ import { sendEmails, getTemplateById } from "../services/api";
 export default function SendEmail() {
   const [params] = useSearchParams();
   const templateId = params.get("template");
+  const [scheduledAt, setScheduledAt] = useState("");
 
   const [emails, setEmails] = useState("");
   const [subject, setSubject] = useState("");
@@ -58,40 +59,50 @@ export default function SendEmail() {
   };
 
   /* SEND */
-  const handleSend = async () => {
-    if (!emails || !subject) return alert("Recipients and subject required");
+const handleSend = async () => {
+  if (!emails || !subject) return alert("Recipients and subject required");
+  const list = cleanEmails(emails);
+  if (!list.length) return alert("No valid emails");
 
-    const list = cleanEmails(emails);
-    if (!list.length) return alert("No valid emails");
+  setLoading(true);
+  setStatus("⏳ Processing...");
 
-    setLoading(true);
-    setProgress({ current: 0, total: list.length });
-    setStatus("🚀 Sending campaign...");
+  try {
+    // 🔥 FIX: Only convert to ISO if a date actually exists
+    // If user cleared the input, it should be null to send immediately
+    const isoDate = scheduledAt ? new Date(scheduledAt).toISOString() : null;
 
-    try {
-      await sendEmails({
-        emails: list.join("\n"),
-        subject,
-        message,
-        templateId,
-        blocks,
-      });
+    const response = await sendEmails({
+      emails: list.join("\n"),
+      subject,
+      message,
+      templateId,
+      blocks,
+      scheduledAt: isoDate, 
+    });
 
-      setProgress({ current: list.length, total: list.length });
-      setStatus("✅ Campaign sent successfully");
-      setEmails("");
-      setMessage("");
-    } catch {
-      setStatus("❌ Failed to send campaign");
-    } finally {
-      setLoading(false);
+    // ✅ Use the message from the server (it will say "Campaign scheduled successfully")
+    setStatus(`✅ ${response.data.message}`);
+    
+    // Optional: Clear form on success
+    if (!scheduledAt) {
+       setEmails("");
+       setSubject("");
     }
-  };
+  } catch (error) {
+    console.error("Send Error:", error);
+    setStatus("❌ Failed: " + (error.response?.data?.message || "Server Error"));
+  } finally {
+    setLoading(false);
+  }
+};
 
   const percentage =
     progress?.total > 0
       ? Math.round((progress.current / progress.total) * 100)
       : 0;
+
+
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
@@ -177,13 +188,46 @@ export default function SendEmail() {
           </section>
         )}
 
+        {/* SCHEDULE TIME */}
+        <section>
+          <label className="text-sm font-semibold text-gray-700 mb-2 block">
+            Schedule time (optional)
+          </label>
+
+<div>
+  <h3>TEST DATE INPUT</h3>
+
+  <input
+    type="datetime-local"
+    onChange={(e) => {
+      alert("CHANGED: " + e.target.value);
+      console.log("FRONTEND scheduledAt:", e.target.value);
+      setScheduledAt(e.target.value);
+    }}
+  />
+</div>
+
+
+
+
+
+          <p className="text-xs text-gray-500 mt-1">
+            Leave empty to send immediately
+          </p>
+        </section>
+
+
         {/* SEND */}
         <button
           onClick={handleSend}
           disabled={loading}
           className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-2xl font-semibold transition disabled:opacity-60"
         >
-          {loading ? "Sending..." : "🚀 Send Campaign"}
+          {loading
+            ? "Processing..."
+            : scheduledAt
+            ? "⏰ Schedule Campaign"
+            : "🚀 Send Campaign"}
         </button>
 
         {/* STATUS */}
