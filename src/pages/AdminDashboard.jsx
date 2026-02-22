@@ -207,6 +207,12 @@ export default function AdminDashboard() {
             >
               ➕ Create Template
             </Link>
+            <Link
+              to="/templates"
+              className="px-5 py-3 rounded-xl bg-slate-100 text-slate-800 text-sm font-semibold hover:bg-slate-200 transition-colors"
+            >
+              📄 My Templates
+            </Link>
           </div>
         </div>
       </div>

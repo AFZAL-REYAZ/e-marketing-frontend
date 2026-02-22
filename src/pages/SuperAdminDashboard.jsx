@@ -26,6 +26,8 @@ export default function SuperAdminDashboard() {
       </div>
     );
   }
+  const weekly = stats?.weekly || {};
+
 
   return (
     <div className="space-y-8">
@@ -70,6 +72,24 @@ export default function SuperAdminDashboard() {
 
       {/* PANELS */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        {/* WEEKLY ANALYTICS */}
+<div className="bg-white rounded-3xl border border-gray-200 p-6 shadow-sm">
+  <div className="flex justify-between items-center mb-4">
+    <h3 className="text-sm font-semibold text-gray-900">
+      Weekly engagement
+    </h3>
+    <span className="text-xs text-gray-500">
+      Last 7 days
+    </span>
+  </div>
+
+  <dl className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <Metric label="Opens" value={weekly.opens || 0} />
+    <Metric label="Clicks" value={weekly.clicks || 0} />
+    <Metric label="Unsubscribes" value={weekly.unsubscribes || 0} danger />
+  </dl>
+</div>
+
         {/* SYSTEM METRICS */}
         <div className="bg-white rounded-3xl border border-gray-200 p-6 shadow-sm">
           <div className="flex justify-between items-center mb-4">
