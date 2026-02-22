@@ -25,7 +25,7 @@ const Header = () => {
           <div className="h-8 w-8 rounded-xl bg-blue-600 flex items-center justify-center text-white font-semibold">
             GM
           </div>
-          <span className="font-semibold text-slate-800">Good Mail</span>
+          <span className="font-semibold text-slate-800">Nexus Mail</span>
         </div>
 
         <button
@@ -57,7 +57,7 @@ const Header = () => {
               GM
             </div>
             <div>
-              <div className="text-sm font-semibold">Good Mail</div>
+              <div className="text-sm font-semibold">Nexus Mail</div>
               <div className="text-xs text-slate-400">
                 Admin workspace
               </div>
